@@ -4,13 +4,14 @@ using namespace std;
 int DEFAULT_SIZE = 10;
 
 class Array{
+public:
 	int sz;
 	int* root;
 	int curr;
-public:
 	Array();
 	Array(int);
 	Array(int*, int);
+	Array(const Array&);
 
 	int* get_array();
 	int get_curr();
@@ -21,6 +22,8 @@ public:
 	vector<int> find_index(int);
 	vector<int> sub_array(int,int);
 	void remove(int);
+
+	Array& operator=(const Array&);
 
 	void print();
 	~Array();
@@ -50,6 +53,15 @@ Array::Array(int* arr, int n){
 	root = new int[sz];
 	for(int i=0;i<sz;i++){
 		root[curr++] = arr[i];
+	}
+}
+
+Array::Array(const Array& obj){
+	sz = obj.sz;
+	curr = obj.curr;
+	root = new int[sz];
+	for(int i=0;i<sz;i++){
+		root[i] = obj.root[i];
 	}
 }
 
@@ -133,6 +145,18 @@ vector<int> Array::sub_array(int start, int end){
 	return ret;
 }
 
+Array& Array::operator=(const Array& obj){
+	if(this != &obj){
+		sz = obj.sz;
+		curr = obj.curr;
+		root = new int[sz];
+		for(int i=0;i<sz;i++){
+			root[i] = obj.root[i];
+		}
+	}
+	return *this;
+}
+
 void Array::remove(int element){
 	for(int i=0;i<curr;i++){
 		if(root[i] == element){
@@ -146,27 +170,21 @@ void Array::remove(int element){
 	}
 }
 
-// doesn't work
-// gives double free error
-// probably because roots inside a1, a2 gets deleted once out of function scope
-// and then again at the end of the main function
 vector<int> merge(Array a1, Array a2){
 	vector<int> res(a1.get_curr() + a2.get_curr());
-	int p1 = 0, p2 = 0;
-	for(int i=0;i<res.size();i++){
-		if(p1 == a1.get_curr()){
-			while(p2 < a2.get_curr()){
-				res[i++] = a2.get_array()[p2++]; 
-			}
-		}else if(p2 == a2.get_curr()){
-			while(p1 < a1.get_curr()){
-				res[i++] = a1.get_array()[p1++];
-			}
-		}else if(a1.get_array()[p1] < a2.get_array()[p2]){
-			res[i] = a1.get_array()[p1++];
-		}else{
-			res[i] = a2.get_array()[p2++];
+	int p1 = 0, p2 = 0, i = 0;
+	while (p1 < a1.get_curr() && p2 < a2.get_curr()) {
+		if (a1.get_array()[p1] < a2.get_array()[p2]) {
+			res.push_back(a1.get_array()[p1++]);
+		} else {
+			res.push_back(a2.get_array()[p2++]);
 		}
+	}
+	while (p1 < a1.get_curr()) {
+		res.push_back(a1.get_array()[p1++]);
+	}
+	while (p2 < a2.get_curr()) {
+		res.push_back(a2.get_array()[p2++]);
 	}
 	return res;
 }
@@ -211,16 +229,16 @@ int main(){
 	}
 	cout<<endl;
 
-	// int sorted1[] = {1, 2, 3, 4, 5};
-	// Array sorted1_arr(sorted1, 5);
-	// int sorted2[] = {6, 7, 8, 9, 10};
-	// Array sorted2_arr(sorted2, 5);
+	int sorted1[] = {1, 2, 3, 4, 5};
+	Array sorted1_arr(sorted1, 5);
+	int sorted2[] = {6, 7, 8, 9, 10};
+	Array sorted2_arr(sorted2, 5);
 
-	// vector<int> sorted = merge(sorted1_arr, sorted2_arr);
-	// for(int i=0;i<sorted.size();i++){
-	// 	cout<<sorted[i]<<" ";
-	// }
-	// cout<<endl;
+	vector<int> sorted = merge(sorted1_arr, sorted2_arr);
+	for(int i=0;i<sorted.size();i++){
+		cout<<sorted[i]<<" ";
+	}
+	cout<<endl;
 
 	arr2.remove(33);
 	arr2.print();
